@@ -1,0 +1,8 @@
+#para adicionar o repositorio local ao repositorio remoto pré existente
+git remote add origin https:github.com/usuario/repositorio.git
+
+#exibe os remositorios remotos
+git remote -v
+
+# enviando as alterações para o rempositorio remoto
+git push origin nome_da_branch_desejada
