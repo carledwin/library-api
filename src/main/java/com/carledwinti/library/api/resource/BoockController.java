@@ -6,8 +6,10 @@ import com.carledwinti.library.api.service.BookService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/books")
@@ -55,4 +57,42 @@ public class BoockController extends BaseController{
 
         return modelMapper.map(bookEntity, BookDTO.class);
     }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public BookDTO getBook(@PathVariable Long id){
+        //caso não retorne nada e não tenha tratamento irá retornar a exception --> Caused by: java.util.NoSuchElementException:
+        // No value present
+        //Optional<Book> bookOptional = bookService.getByid(id);
+
+        //Vamos utilizar conforme a baixo para conseguirmos tratar o retorno de Option empty e retornar uma exception com codigo de status
+        return bookService.getByid(id)
+                .map(book -> modelMapper.map(book, BookDTO.class)) //mapea a entity book para bookDTO caso seja encontrado
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND)); //retorna uma Exception Spring com
+                                                // responseStatus customisado caso não encontre a entity na base de dados
+    }
+
+    @DeleteMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteBook(@PathVariable Long id){
+        //ele tenta obter um book com um .get() implicito
+        // e caso não encontre retornamos uma exception com resonseStatus NOT_FOUND no orElseThrow
+        Book book = bookService.getByid(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        bookService.delete(book);
+    }
+
+    @PutMapping("{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public BookDTO updateBook(@PathVariable Long id, @RequestBody BookDTO bookDTO){
+        return bookService.getByid(id).map(existentBook -> {
+            //set
+            existentBook.setAuthor(bookDTO.getAuthor());
+            existentBook.setTitle(bookDTO.getTitle());
+            //update
+            existentBook = bookService.update(existentBook);
+            //map to return DTO
+            return modelMapper.map(existentBook, BookDTO.class);
+        }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
 }
