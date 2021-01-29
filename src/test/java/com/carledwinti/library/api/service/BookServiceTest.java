@@ -1,5 +1,7 @@
 package com.carledwinti.library.api.service;
 
+import com.carledwinti.library.api.constants.ConstantsError;
+import com.carledwinti.library.api.exception.BusinessException;
 import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.repository.BookRepository;
 import com.carledwinti.library.api.service.impl.BookServiceImpl;
@@ -12,7 +14,6 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 //Esta classe diferente da classe de teste para o Controller precisa somente das @s abaixo
 @ExtendWith(SpringExtension.class)//sobe o context para os testes
@@ -47,12 +48,8 @@ public class BookServiceTest {
         //mock
         //o bookService retornará o que o bookRepository mockado com @MockBean
         // retorna como padrão que são os valores padrões do objeto Book desta forma precisaremos mockar o retorno
-        Book bookMock = Book.builder()
-                .id(13l)
-                .title("A vida de Sararhik")
-                .isbn("123")
-                .author("Blano")
-                .build();
+        Book bookMock = createValidBook();
+        Mockito.when(bookRepository.existsByIsbn(Mockito.anyString())).thenReturn(false);
         Mockito.when(bookRepository.save(book)).thenReturn(bookMock);
 
         //execution
@@ -63,5 +60,36 @@ public class BookServiceTest {
         Assertions.assertThat(savedBook.getIsbn()).isEqualTo("123");
         Assertions.assertThat(savedBook.getTitle()).isEqualTo("A vida de Sararhik");
         Assertions.assertThat(savedBook.getAuthor()).isEqualTo("Blano");
+    }
+
+    @Test
+    @DisplayName("Deve lançar erro de negocio ao tentar salvar livro com isbn duplicado")
+    public void shoudNotSaveABookWithDuplicatedISBN(){
+        //scenario
+        Book book = createValidBook();
+        //mock
+        Mockito.when(bookRepository.existsByIsbn(Mockito.anyString())).thenReturn(true);
+        //execution
+        Throwable throwable = Assertions.catchThrowable(() -> bookService.save(book));
+
+        //verification
+        Assertions.assertThat(throwable)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ConstantsError.MSG_ERROR_ISBN_ALREADY_EXISTS);//caso nao tenha cido implementada essa validação
+        //pode retornar --> java.lang.AssertionError: Expecting actual not to be null
+
+        //caso já exista pode ocorrer de mesmo assim ele chamar o save do repository, precisamos garantir que o
+        //save não será executado/chamado
+        Mockito.verify(bookRepository, Mockito.never()).save(book);
+    }
+
+    private Book createValidBook() {
+        Book bookMock = Book.builder()
+                .id(13l)
+                .title("A vida de Sararhik")
+                .isbn("123")
+                .author("Blano")
+                .build();
+        return bookMock;
     }
 }

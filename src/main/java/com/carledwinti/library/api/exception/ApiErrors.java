@@ -5,6 +5,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ApiErrors {
@@ -16,6 +17,10 @@ public class ApiErrors {
         bindingResult.getAllErrors().forEach(error -> {
             this.errors.add(error.getDefaultMessage());
         });
+    }
+
+    public ApiErrors(BusinessException businessException) {
+        this.errors = Arrays.asList(businessException.getLocalizedMessage());
     }
 
     public List<String> getErrors() {

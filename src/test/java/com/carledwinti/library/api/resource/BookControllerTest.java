@@ -1,6 +1,8 @@
 package com.carledwinti.library.api.resource;
 
+import com.carledwinti.library.api.constants.ConstantsError;
 import com.carledwinti.library.api.dto.BookDTO;
+import com.carledwinti.library.api.exception.BusinessException;
 import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.service.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,6 +76,8 @@ public class BookControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("isbn").value(bookDTO.getIsbn()));
     }
 
+
+    //validação de integridade do objeto enviado na request
     @Test
     @DisplayName("Deve lançar erro de validação quando não houver dados suficientes para a criação do livro.")
     public void createInvalidBookTest() throws Exception {
@@ -101,6 +105,30 @@ public class BookControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("errors", Matchers.hasSize(3)));
     }
 
+    //validação de regra de negócio
+    @Test
+    @DisplayName("Deve lançar erro ao tentar cadastrar um livro com isbn já utilizado por outro.")
+    public void createBookWithDuplicatedIsbn() throws Exception {
+        //scenario
+        BookDTO bookDTO = BookDTO.builder().author("Andres").isbn("123").title("A mudança").build();
+        String bookDTOJson = new ObjectMapper().writeValueAsString(bookDTO);
 
+        //mock
+
+        BDDMockito.given(bookService.save(Mockito.any(Book.class))).willThrow(new BusinessException(ConstantsError.MSG_ERROR_ISBN_ALREADY_EXISTS));
+        MockHttpServletRequestBuilder mockHttpServletRequestBuilder = MockMvcRequestBuilders.post(URL_BOOK_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(bookDTOJson);
+
+        //execution
+        //verification
+        mockMvc.perform(mockHttpServletRequestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("errors", Matchers.hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("errors[0]").value(ConstantsError.MSG_ERROR_ISBN_ALREADY_EXISTS));
+
+
+    }
 
 }

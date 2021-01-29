@@ -1,5 +1,7 @@
 package com.carledwinti.library.api.service.impl;
 
+import com.carledwinti.library.api.constants.ConstantsError;
+import com.carledwinti.library.api.exception.BusinessException;
 import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.repository.BookRepository;
 import com.carledwinti.library.api.service.BookService;
@@ -16,6 +18,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book save(Book book) {
+        if(bookRepository.existsByIsbn(book.getIsbn())){
+            throw new BusinessException(ConstantsError.MSG_ERROR_ISBN_ALREADY_EXISTS);
+        }
         return bookRepository.save(book);
     }
 }
