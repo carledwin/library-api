@@ -4,6 +4,7 @@ import com.carledwinti.library.api.dto.BookDTO;
 import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.service.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +46,7 @@ public class BookControllerTest {
                             .title("As Aventuras do Rei")
                             .isbn("123456")
                         .build();
-        String bodyJsonString = new ObjectMapper().writeValueAsString(bookDTO);
+        String bookDTOJson = new ObjectMapper().writeValueAsString(bookDTO);
 
         //mock *********************************************************************************************************
         Book savedBook = Book.builder()
@@ -55,12 +56,12 @@ public class BookControllerTest {
                 .id(12l)
                 .build();
         BDDMockito.given((bookService.save(Mockito.any(Book.class)))).willReturn(savedBook);
+
         //define uma requisição
-        MockHttpServletRequestBuilder mockHttpServletRequestBuilder =
-                MockMvcRequestBuilders.post(URL_BOOK_API)
+        MockHttpServletRequestBuilder mockHttpServletRequestBuilder = MockMvcRequestBuilders.post(URL_BOOK_API)
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .accept(MediaType.APPLICATION_JSON)
-                                    .content(bodyJsonString);
+                                    .content(bookDTOJson);
 
         //execution ****************************************************************************************************
         //verification
@@ -75,8 +76,31 @@ public class BookControllerTest {
 
     @Test
     @DisplayName("Deve lançar erro de validação quando não houver dados suficientes para a criação do livro.")
-    public void createInvalidBookTest(){
+    public void createInvalidBookTest() throws Exception {
 
+        //scenario
+        //caso seja enviado um objeto com todas as propriedades vazias irá lançar
+        //org.springframework.web.util.NestedServletException: Request processing failed;
+        // nested exception is java.lang.IllegalArgumentException: source cannot be null, isso porque o
+        //modelMapper não aceitará um objeto com propriedades 'todas' vazias
+        //Será necessario anotar o @RequestBody com @Valid e anotar alguns campos com validations do
+        //javax.validation ex.:javax.validation.constraints.NotEmpty;
+        //Desta forma o Spring não permitirá que a requisição aconteça
+        String bookDTOJson = new ObjectMapper().writeValueAsString(new BookDTO());
+
+        //mock
+        MockHttpServletRequestBuilder mockHttpServletRequestBuilder = MockMvcRequestBuilders.post(URL_BOOK_API)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(bookDTOJson);
+
+        //execution
+        //aqui vamos utilizar o ExceptionHandler para tratar exceptions da nossa api
+        mockMvc.perform(mockHttpServletRequestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("errors", Matchers.hasSize(3)));
     }
+
+
 
 }
