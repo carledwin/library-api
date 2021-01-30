@@ -6,6 +6,7 @@ import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.repository.BookRepository;
 import com.carledwinti.library.api.service.impl.BookServiceImpl;
 import org.assertj.core.api.Assertions;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -262,7 +263,7 @@ public class BookServiceTest {
     @DisplayName("Deve filtrar livros pelas propriedades")
     public void findBookByFilter(){
         //scenario
-        Book bookFilter = Book.builder().id(13l).author("Vegan Unbras").isbn("123").title("Carros Velozes").build();
+        Book bookFilter = existentBook();
         int page=0, size=10,total=1;
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Book> bookPage = new PageImpl<>(Arrays.asList(bookFilter), pageRequest, total);
@@ -281,6 +282,34 @@ public class BookServiceTest {
         Assertions.assertThat(foundBooksFilter.getPageable().getPageNumber()).isEqualTo(0);
         Assertions.assertThat(foundBooksFilter.getPageable().getPageSize()).isEqualTo(10);
         Assertions.assertThat(foundBooksFilter.getTotalElements()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Deve obter um book by isbn")
+    public void getBookByIsbn(){
+        //scenario
+        String isbn = "123";
+        Book book = existentBook();
+
+        //mock
+        Mockito.when(bookRepository.findByIsbn(isbn)).thenReturn(Optional.of(book));
+
+        //execution
+        Optional<Book> optionalBook = bookService.getBookByIsbn(isbn);
+
+        //verification
+        Assertions.assertThat(optionalBook.isPresent()).isTrue();
+        Assertions.assertThat(optionalBook.get().getIsbn()).isEqualTo(existentBook().getIsbn());
+        Assertions.assertThat(optionalBook.get().getTitle()).isEqualTo(existentBook().getTitle());
+        Assertions.assertThat(optionalBook.get().getAuthor()).isEqualTo(existentBook().getAuthor());
+        Assertions.assertThat(optionalBook.get().getId()).isEqualTo(existentBook().getId());
+
+        Mockito.verify(bookRepository, Mockito.times(1)).findByIsbn(isbn);
+    }
+
+
+    private Book existentBook() {
+        return Book.builder().id(13l).author("Vegan Unbras").isbn("123").title("Carros Velozes").build();
     }
 
     private Book createValidBook() {

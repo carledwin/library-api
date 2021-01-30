@@ -5,11 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
@@ -19,16 +15,16 @@ import java.time.LocalDate;
 @Builder
 public class Loan {
 
+    //caso não seja incluída a @nnotation @Id ao tentar executar testes ocorrerá a falha --> No identifier specified
+    // for entity: com.carledwinti.library.api.model.Loan
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotNull
     private String isbn;
-    @NotNull
     private String customer;
-    @NotNull
+    @JoinColumn(name="id_book")
+    @ManyToOne
     private Book book;
-    @NotNull
     private LocalDate loanDate;
-    @NotNull
     private Boolean returned;
 }
