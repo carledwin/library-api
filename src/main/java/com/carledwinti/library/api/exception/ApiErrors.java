@@ -3,6 +3,7 @@ package com.carledwinti.library.api.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +22,10 @@ public class ApiErrors {
 
     public ApiErrors(BusinessException businessException) {
         this.errors = Arrays.asList(businessException.getLocalizedMessage());
+    }
+
+    public ApiErrors(ResponseStatusException responseStatusException) {
+        this.errors = Arrays.asList(responseStatusException.getReason());
     }
 
     public List<String> getErrors() {

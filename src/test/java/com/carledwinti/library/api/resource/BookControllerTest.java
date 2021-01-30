@@ -32,7 +32,8 @@ import java.util.Optional;
 
 @ExtendWith(SpringExtension.class)//JUnit 5! //Cria um mini context para executar os testes
 @ActiveProfiles("test")//Define o ambiente/profile/perfil de 'test' para a execução destes testes
-@WebMvcTest//Para criar context Rest e testar os métodos da api
+//@WebMvcTest//Para criar context Rest e testar os métodos da api
+@WebMvcTest(controllers = {BookController.class})//Podemos configurar para subir somente controllers específicos no context
 @AutoConfigureMockMvc //configura um objeto para podermos realizar as requisições e permitirá a utilização do @Autowired
 public class BookControllerTest {
 

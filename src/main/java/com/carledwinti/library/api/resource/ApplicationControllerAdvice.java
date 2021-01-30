@@ -3,15 +3,18 @@ package com.carledwinti.library.api.resource;
 import com.carledwinti.library.api.exception.ApiErrors;
 import com.carledwinti.library.api.exception.BusinessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-
-public class BaseController {
+@RestControllerAdvice//Terá configurações globais para todos os controllers
+public class ApplicationControllerAdvice {
     //aqui vamos utilizar o ExceptionHandler para tratar exceptions da nossa api
     //essa exception ApiErros automaticamente será lançada toda vez que o @Valid tentar validar uma request e ela não for valida,
     //pois ao criar um method anotado com @ExceptionHandler ele irá interceptar o @Valid e capturara o erro
@@ -36,5 +39,11 @@ public class BaseController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiErrors handleBusinessExceptions(BusinessException businessException){
         return new ApiErrors(businessException);
+    }
+
+    //Será chamado sempre que for lançada uma ResponseStatusException
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity handleResponseStatusException(ResponseStatusException responseStatusException){
+        return new ResponseEntity(new ApiErrors(responseStatusException), responseStatusException.getStatus());
     }
 }

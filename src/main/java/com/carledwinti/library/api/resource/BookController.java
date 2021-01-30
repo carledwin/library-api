@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/books")
-public class BookController extends BaseController{
+public class BookController {
 
     private BookService bookService;
     private ModelMapper modelMapper; //existe a necessida de adicioná-lo ao context declarando

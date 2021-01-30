@@ -11,6 +11,6 @@ public interface BookService {
     Optional<Book> getByid(Long id);
     void delete(Book book);
     Book update(Book book);
-
     Page<Book> findByFilter(Book bookFilter, Pageable pageRequest);
+    Optional<Book> getBookByIsbn(String isbn);
 }
