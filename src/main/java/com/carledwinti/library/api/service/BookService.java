@@ -12,5 +12,5 @@ public interface BookService {
     void delete(Book book);
     Book update(Book book);
 
-    Page<Book> find(Book bookFilter, Pageable pageRequest);
+    Page<Book> findByFilter(Book bookFilter, Pageable pageRequest);
 }

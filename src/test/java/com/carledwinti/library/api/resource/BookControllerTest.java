@@ -285,7 +285,7 @@ public class BookControllerTest {
         //mock
         int page = 0, size = 100, total = 1;
         PageImpl<Book> bookPage = new PageImpl<>(Arrays.asList(book), PageRequest.of(page, size), total);
-        BDDMockito.given(bookService.find(Mockito.any(Book.class), Mockito.any(Pageable.class))).willReturn(bookPage);
+        BDDMockito.given(bookService.findByFilter(Mockito.any(Book.class), Mockito.any(Pageable.class))).willReturn(bookPage);
 
         //execution
         //"/api/books?"

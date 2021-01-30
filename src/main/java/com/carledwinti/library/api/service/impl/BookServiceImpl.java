@@ -5,6 +5,8 @@ import com.carledwinti.library.api.exception.BusinessException;
 import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.repository.BookRepository;
 import com.carledwinti.library.api.service.BookService;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -53,7 +55,16 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Page<Book> find(Book bookFilter, Pageable pageRequest) {
-        return null;
+    public Page<Book> findByFilter(Book bookFilter, Pageable pageRequest) {
+        Example<Book> exampleBook = Example.of(bookFilter,
+                ExampleMatcher.matching()
+                        .withIgnoreCase()//irá ignorar Case nos valores passados par acada propriedade(author, title, isbn)
+                        .withIgnoreNullValues()//irá ignorar as propriedades(author, title, isbn) cujo valor seja null
+                        .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING) //Neste caso irá buscar em cada
+                        // propriedade do tipo String que foi passada(author, title, isbn) valores que contenham
+                        // o valor passado em cada uma
+
+        );
+        return bookRepository.findAll(exampleBook, pageRequest);
     }
 }

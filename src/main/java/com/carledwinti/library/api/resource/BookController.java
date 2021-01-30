@@ -13,7 +13,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -106,7 +105,7 @@ public class BookController extends BaseController{
     @ResponseStatus(HttpStatus.OK)
     public Page<BookDTO> getByFilter(BookDTO bookDTO, Pageable pageRequest){
         Book bookfilter = modelMapper.map(bookDTO, Book.class);
-        Page<Book> pageBook = bookService.find(bookfilter, pageRequest);
+        Page<Book> pageBook = bookService.findByFilter(bookfilter, pageRequest);
         List<BookDTO> bookDTOList =  pageBook.getContent()
                                             .stream()
                                             .map(entity -> modelMapper.map(entity, BookDTO.class))

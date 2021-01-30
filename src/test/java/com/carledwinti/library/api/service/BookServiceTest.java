@@ -12,9 +12,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 //Esta classe diferente da classe de teste para o Controller precisa somente das @s abaixo
@@ -250,6 +256,31 @@ public class BookServiceTest {
         //essa verificação é para garantir que o metodo delete nunca foi chamado já que não passou em uma
         // validação e lançou uma exception
         Mockito.verify(bookRepository, Mockito.never()).delete(book);
+    }
+
+    @Test
+    @DisplayName("Deve filtrar livros pelas propriedades")
+    public void findBookByFilter(){
+        //scenario
+        Book bookFilter = Book.builder().id(13l).author("Vegan Unbras").isbn("123").title("Carros Velozes").build();
+        int page=0, size=10,total=1;
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Book> bookPage = new PageImpl<>(Arrays.asList(bookFilter), pageRequest, total);
+        List<Book> bookList = Arrays.asList(bookFilter);
+
+        //mock
+        Mockito.when(bookRepository.findAll(Mockito.any(Example.class), Mockito.any(PageRequest.class))).thenReturn(bookPage);
+
+        //execution
+        Page<Book> foundBooksFilter = bookService.findByFilter(bookFilter, pageRequest);
+
+        //verification
+        Assertions.assertThat(foundBooksFilter).isNotNull();
+        Assertions.assertThat(foundBooksFilter.isEmpty()).isFalse();
+        Assertions.assertThat(foundBooksFilter.getContent()).isEqualTo(bookList);
+        Assertions.assertThat(foundBooksFilter.getPageable().getPageNumber()).isEqualTo(0);
+        Assertions.assertThat(foundBooksFilter.getPageable().getPageSize()).isEqualTo(10);
+        Assertions.assertThat(foundBooksFilter.getTotalElements()).isEqualTo(1);
     }
 
     private Book createValidBook() {
