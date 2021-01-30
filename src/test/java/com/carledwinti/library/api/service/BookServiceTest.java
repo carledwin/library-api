@@ -15,10 +15,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Optional;
+
 //Esta classe diferente da classe de teste para o Controller precisa somente das @s abaixo
 @ExtendWith(SpringExtension.class)//sobe o context para os testes
 @ActiveProfiles("test")//define que iremos trabalhar no context de test
 public class BookServiceTest {
+
+    /** ******* ESTA CAMADA É DE TESTE UNITÁRIO COM MOCK SEM INTEGRAÇÃO(MOCKA) A CHAMADA AO REPOSITORY ************** */
 
     //Caso não exista nenhuma implementation de BookService ao executar
     // receberemos java.lang.NullPointerException
@@ -60,6 +64,8 @@ public class BookServiceTest {
         Assertions.assertThat(savedBook.getIsbn()).isEqualTo("123");
         Assertions.assertThat(savedBook.getTitle()).isEqualTo("A vida de Sararhik");
         Assertions.assertThat(savedBook.getAuthor()).isEqualTo("Blano");
+
+        Mockito.verify(bookRepository, Mockito.times(1)).save(book);
     }
 
     @Test
@@ -81,6 +87,169 @@ public class BookServiceTest {
         //caso já exista pode ocorrer de mesmo assim ele chamar o save do repository, precisamos garantir que o
         //save não será executado/chamado
         Mockito.verify(bookRepository, Mockito.never()).save(book);
+    }
+
+    @Test
+    @DisplayName("Deve obter um livro por id")
+    public void getByid(){
+        //scenario
+        Long id = 123l;
+
+        //mock
+        Mockito.when(bookRepository.findById(id)).thenReturn(Optional.of(Book.builder().id(id).title("O Vagalume Azul").build()));
+
+        //execution
+        Optional<Book> foundOptionalBook = bookService.getByid(id);
+
+        //verification
+        Assertions.assertThat(foundOptionalBook.isPresent()).isTrue();
+        Assertions.assertThat(foundOptionalBook.get().getId()).isEqualTo(123l);
+        Assertions.assertThat(foundOptionalBook.get().getTitle()).isEqualTo("O Vagalume Azul");
+
+        Mockito.verify(bookRepository, Mockito.times(1)).findById(id);
+    }
+
+    @Test
+    @DisplayName("Deve retornar vazio ao tentar obter um livro por Id quando ele não existe na base")
+    public void bookNotFoundById(){
+        //scenario
+        Long id = 123l;
+        //mock
+        Mockito.when(bookRepository.findById(id)).thenReturn(Optional.empty());
+
+        //execution
+        Optional<Book> emptyOptionalBook = bookService.getByid(id);
+
+        //verification
+        Assertions.assertThat(emptyOptionalBook.isPresent()).isFalse();
+
+        Mockito.verify(bookRepository, Mockito.times(1)).findById(id);
+    }
+
+    @Test
+    @DisplayName("Deve retornar exception ao tentar buscar livro com Id null.")
+    public void idNullFindById(){
+        //scenario
+        Long id = null;
+
+        //execution
+        Throwable throwable = Assertions.catchThrowable(() -> bookService.getByid(id));
+
+        //verification
+        Assertions.assertThat(throwable)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(ConstantsError.MSG_ERROR_ID_CANT_BE_NULL);
+
+        //essa verificação é para garantir que o metodo delete nunca foi chamado já que não passou em uma
+        // validação e lançou uma exception
+        Mockito.verify(bookRepository, Mockito.never()).findById(id);
+    }
+
+    @Test
+    @DisplayName("Deve atualizar um livro")
+    public void updateBook(){
+        //scenario
+        Long id = 45l;
+        Book updatedBook = createValidBook();
+        updatedBook.setId(id);
+        Book updatingBook = Book.builder().id(id).build();
+
+        //mock
+        Mockito.when(bookRepository.save(updatingBook)).thenReturn(updatedBook);
+
+        //execution 1
+        Book book = bookService.update(updatingBook);
+
+        //verification
+        Assertions.assertThat(book.getId()).isEqualTo(updatedBook.getId());
+        Assertions.assertThat(book.getAuthor()).isEqualTo(updatedBook.getAuthor());
+        Assertions.assertThat(book.getTitle()).isEqualTo(updatedBook.getTitle());
+        Assertions.assertThat(book.getIsbn()).isEqualTo(updatedBook.getIsbn());
+
+        Mockito.verify(bookRepository, Mockito.times(1)).save(updatingBook);
+    }
+
+    @Test
+    @DisplayName("Deve deletar um livro")
+    public void deleteBook(){
+        //scenario
+        Long id = 102l;
+        Book existentBook = createValidBook();
+        existentBook.setId(id);
+        //mock
+        /** ***NÃO MOCKAMOS NADA NESTE CASO POIS O delete RETORNA void
+         * ALTERNATIVA PARA ISSO É UTILIZAR O Mockito.verify PARA GARANTIR QUE O repository.delete() FOI INVOCADO
+         * 1X PASSANDO EXATAMENTE ESTE LIVRO*** */
+
+        //execution + verification(verifica que na execução não foi retornado nenhum erro)
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> bookService.delete(existentBook));
+
+        //verification
+        Mockito.verify(bookRepository, Mockito.times(1)).delete(existentBook);
+        //Mockito.verify(bookRepository, Mockito.times(1)).delete(Book.builder().id(1233l).build());
+        /** CASO VERIFIQUE QUE O LIVRO PASSADO PARA O DELETE É DIFERENTE DO VERIFICADO RETORNARÁ A FALHA:
+         Argument(s) are different! Wanted:
+         com.carledwinti.library.api.repository.BookRepository#0 bean.delete(
+         Book(id=1233, title=null, author=null, isbn=null)
+         );
+         -> at com.carledwinti.library.api.service.BookServiceTest.deleteBook(BookServiceTest.java:177)
+         Actual invocations have different arguments:
+         com.carledwinti.library.api.repository.BookRepository#0 bean.delete(
+         Book(id=102, title=A vida de Sararhik, author=Blano, isbn=123)
+         );
+         **/
+    }
+
+    @Test
+    @DisplayName("Deve retornar exception ao tentar atualizar book com book ou id null.")
+    public void bookIdNullUpdate(){
+        //scenario
+        Book book = null;
+        //execution
+        Throwable throwable = Assertions.catchThrowable(() -> bookService.update(book));
+
+        //verification
+        Assertions.assertThat(throwable)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(ConstantsError.MSG_ERROR_BOOK_AND_ID_CANT_BE_NULL);
+
+        //essa verificação é para garantir que o metodo save nunca foi chamado já que não passou em uma
+        // validação e lançou uma exception
+        Mockito.verify(bookRepository, Mockito.never()).save(book);
+    }
+
+    @Test
+    @DisplayName("** com Assertions AssertJ que valida a mensagem de retorno Deve retornar exception ao tentar deletar book com ou id null")
+    public void idNullDeleteBook() {
+        //scenario
+        Book book = null;
+        //exception
+        Throwable throwable = Assertions.catchThrowable(() -> bookService.delete(book));
+
+        //verification
+        Assertions.assertThat(throwable)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(ConstantsError.MSG_ERROR_BOOK_AND_ID_CANT_BE_NULL);
+
+        //essa verificação é para garantir que o metodo delete nunca foi chamado já que não passou em uma
+        // validação e lançou uma exception
+        Mockito.verify(bookRepository, Mockito.never()).delete(book);
+    }
+
+    @Test
+    @DisplayName(" *** com Assertions JUnit Jupter Deve retornar exception ao tentar deletar book com ou id null")
+    public void idNullDeleteBook2() {
+        //scenario
+        Book book = null;
+        //exception
+        IllegalArgumentException illegalArgumentException = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> bookService.delete(book));
+
+        //verification
+        Assertions.assertThat(illegalArgumentException.getLocalizedMessage()).isEqualTo(ConstantsError.MSG_ERROR_BOOK_AND_ID_CANT_BE_NULL);
+
+        //essa verificação é para garantir que o metodo delete nunca foi chamado já que não passou em uma
+        // validação e lançou uma exception
+        Mockito.verify(bookRepository, Mockito.never()).delete(book);
     }
 
     private Book createValidBook() {

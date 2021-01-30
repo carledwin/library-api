@@ -12,11 +12,15 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Optional;
+
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 @DataJpaTest//Mockando um bando de dados em memory --> indica que farei testes com JPA, ele irá criar uma instancia do
 // banco de dados em memory(H2 é necessário para essa execução), somente para os testes e ao final dos testes irá apagar tudo
 public class BookRepositoryTest {
+
+    /** ********* TESTES DE INTEGRAÇÃO COM O BANCO DE DADOS IN MEMORY H2 ************************ */
 
     // Gerencia uma conexao com o bando de dados Mockado em memory -->
     // este objeto precisa ser injetado no context para criarmos os scenario, ele simula um entityManager, porém para testes
@@ -37,7 +41,7 @@ public class BookRepositoryTest {
         //executando efetivamente inclusão de dados no banco de dados sem mock
         Book book = bookRepository.save(Book.builder().author("Lane").title("Arredores da Ilha").isbn(isbn).build());
         //ou
-        Book bookPersist = testEntityManager.persist(Book.builder().author(derikAuthor).title(derikTitle).isbn("456").build());
+        Book bookPersist = testEntityManager.persist(createNewBook());
 
         //execution - executando efetivamente consulta no banco de dados sem mock
         boolean exists = bookRepository.existsByIsbn(isbn);
@@ -69,4 +73,62 @@ public class BookRepositoryTest {
         Assertions.assertThat(exists).isFalse();
     }
 
+    @Test
+    @DisplayName("Deve obter um livro por id.")
+    public void findById(){
+        //scenario
+        Book book = createNewBook();
+
+        //execution 1
+        Book persistedBook = testEntityManager.persist(book);
+
+        //execution 2
+        Optional<Book> foundOptionalBook = bookRepository.findById(persistedBook.getId());
+
+        Assertions.assertThat(foundOptionalBook.isPresent()).isTrue();
+        Assertions.assertThat(foundOptionalBook.get().getId()).isEqualTo(persistedBook.getId());
+        Assertions.assertThat(foundOptionalBook.get().getAuthor()).isEqualTo(persistedBook.getAuthor());
+        Assertions.assertThat(foundOptionalBook.get().getTitle()).isEqualTo(persistedBook.getTitle());
+        Assertions.assertThat(foundOptionalBook.get().getIsbn()).isEqualTo(persistedBook.getIsbn());
+    }
+
+    @Test
+    @DisplayName("Deve salvar um livro")
+    public void save(){
+        Book book = createNewBook();
+        Book savedBook = bookRepository.save(book);
+
+        Assertions.assertThat(savedBook.getId()).isNotNull();
+        Assertions.assertThat(savedBook.getAuthor()).isEqualTo(createNewBook().getAuthor());
+        Assertions.assertThat(savedBook.getTitle()).isEqualTo(createNewBook().getTitle());
+        Assertions.assertThat(savedBook.getIsbn()).isEqualTo(createNewBook().getIsbn());
+    }
+
+    @Test
+    @DisplayName("Deve deletar um livro")
+    public void delete(){
+        //scenario
+        Book book = createNewBook();
+
+        //execution 1
+        Book savedBook = bookRepository.save(book);
+        Book foundBook = testEntityManager.find(Book.class, savedBook.getId());
+
+        //verification 1
+        Assertions.assertThat(foundBook).isNotNull();
+        Assertions.assertThat(foundBook.getAuthor()).isEqualTo(createNewBook().getAuthor());
+        Assertions.assertThat(foundBook.getTitle()).isEqualTo(createNewBook().getTitle());
+        Assertions.assertThat(foundBook.getIsbn()).isEqualTo(createNewBook().getIsbn());
+
+        //main execution and verification
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> bookRepository.delete(savedBook));
+
+        //verification
+        Book notFoundBook = testEntityManager.find(Book.class, savedBook.getId());
+        Assertions.assertThat(notFoundBook).isNull();
+    }
+
+    private Book createNewBook() {
+        return Book.builder().author("Derik").title("Lua Nova").isbn("456").build();
+    }
 }

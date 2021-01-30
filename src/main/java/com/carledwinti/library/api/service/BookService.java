@@ -1,6 +1,8 @@
 package com.carledwinti.library.api.service;
 
 import com.carledwinti.library.api.model.Book;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
@@ -9,4 +11,6 @@ public interface BookService {
     Optional<Book> getByid(Long id);
     void delete(Book book);
     Book update(Book book);
+
+    Page<Book> find(Book bookFilter, Pageable pageRequest);
 }

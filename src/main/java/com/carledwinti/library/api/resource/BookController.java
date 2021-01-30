@@ -4,23 +4,28 @@ import com.carledwinti.library.api.dto.BookDTO;
 import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.service.BookService;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/books")
-public class BoockController extends BaseController{
+public class BookController extends BaseController{
 
     private BookService bookService;
     private ModelMapper modelMapper; //existe a necessida de adicioná-lo ao context declarando
     // um @Bean na class de inicialização **LibraryApiApplication para que ela possa ser injetada aqui via constructor
 
     //criado o constructor para injetar o bookService no controller ao inves de utilizar o @Autowired
-    public BoockController(BookService bookService, ModelMapper modelMapper){
+    public BookController(BookService bookService, ModelMapper modelMapper){
         this.bookService = bookService;
         this.modelMapper = modelMapper;
     }
@@ -93,6 +98,20 @@ public class BoockController extends BaseController{
             //map to return DTO
             return modelMapper.map(existentBook, BookDTO.class);
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    //Neste caso o Spring vai tentar encaixar as propriedades author e title no objeto bookDTO os parametros passados
+    // via queryParam e também as propriedades page e size ele vai tentar encaicar no objeto pageRequest(Pageable)
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public Page<BookDTO> getByFilter(BookDTO bookDTO, Pageable pageRequest){
+        Book bookfilter = modelMapper.map(bookDTO, Book.class);
+        Page<Book> pageBook = bookService.find(bookfilter, pageRequest);
+        List<BookDTO> bookDTOList =  pageBook.getContent()
+                                            .stream()
+                                            .map(entity -> modelMapper.map(entity, BookDTO.class))
+                                            .collect(Collectors.toList());
+        return new PageImpl<BookDTO>(bookDTOList, pageRequest, pageBook.getTotalElements());
     }
 
 }
