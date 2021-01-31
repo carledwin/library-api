@@ -6,6 +6,8 @@ import com.carledwinti.library.api.exception.BusinessException;
 import com.carledwinti.library.api.model.Loan;
 import com.carledwinti.library.api.repository.LoanRepository;
 import com.carledwinti.library.api.service.LoanService;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -45,7 +47,9 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
-    public Page<Loan> findByFilter(Loan loan, Pageable pageable) {
-        return null;
+    public Page<Loan> findByFilter(Loan loanFilter, Pageable pageable) {
+        return loanRepository.findByBookIsbnOrCustomer(loanFilter.getIsbn(), loanFilter.getCustomer(), pageable);
     }
+
+
 }

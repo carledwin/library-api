@@ -1,6 +1,7 @@
 package com.carledwinti.library.api.service;
 
 import com.carledwinti.library.api.constants.ConstantsError;
+import com.carledwinti.library.api.dto.LoanDTO;
 import com.carledwinti.library.api.dto.LoanFilterDTO;
 import com.carledwinti.library.api.exception.BusinessException;
 import com.carledwinti.library.api.model.Book;
@@ -15,10 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -26,6 +24,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(SpringExtension.class)
@@ -152,6 +151,41 @@ public class LoanServiceTest {
         Assertions.assertThat(loan.get().getReturned()).isTrue();
         Mockito.verify(loanRepository, Mockito.times(1)).findById(existentLoan.getId());
         Mockito.verify(loanRepository, Mockito.times(1)).save(existentLoan);
+    }
+
+    @Test
+    @DisplayName("Deve filtrar loan by filter")
+    public void findByfilter(){
+        //scenario
+        int page=0, size=15, total=1;
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Loan loanFilter = Loan.builder().isbn("").customer("").build();
+        List<Loan> loanFindList = Arrays.asList(loanFilter);
+        Page<Loan> pageFindLoan = new PageImpl<Loan>(loanFindList, pageRequest, total);
+        Loan loan = savedLoan();
+        List<Loan> loanFoundList = Arrays.asList(loan);
+        Page<Loan> pageFoundLoan = new PageImpl<Loan>(loanFoundList, pageRequest, total);
+
+        //mock
+        Mockito.when(loanRepository.findByBookIsbnOrCustomer(Mockito.anyString(),
+                                                             Mockito.anyString(),
+                                                             Mockito.any(PageRequest.class)))
+                                    .thenReturn(pageFoundLoan);
+
+        //execution
+        Page<Loan> foundPageLoan = loanService.findByFilter(loanFilter, pageFindLoan.getPageable());
+
+        //verification
+        Assertions.assertThat(foundPageLoan).isNotNull();
+        Assertions.assertThat(foundPageLoan.isEmpty()).isFalse();
+        Assertions.assertThat(foundPageLoan.getContent().isEmpty()).isFalse();
+        Assertions.assertThat(foundPageLoan.getContent().get(0).getId()).isEqualTo(savedLoan().getId());
+        Assertions.assertThat(foundPageLoan.getSize()).isEqualTo(size);
+        Assertions.assertThat(foundPageLoan.getTotalPages()).isEqualTo(1);
+        Assertions.assertThat(foundPageLoan.getTotalElements()).isEqualTo(total);
+
+        Mockito.verify(loanRepository, Mockito.times(1))
+                .findByBookIsbnOrCustomer(loanFilter.getIsbn(), loanFilter.getCustomer(), pageRequest);
     }
 
     private Loan savedLoan(){
