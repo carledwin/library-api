@@ -4,7 +4,9 @@ import com.carledwinti.library.api.constants.ConstantsError;
 import com.carledwinti.library.api.dto.BookDTO;
 import com.carledwinti.library.api.exception.BusinessException;
 import com.carledwinti.library.api.model.Book;
+import com.carledwinti.library.api.model.Loan;
 import com.carledwinti.library.api.service.BookService;
+import com.carledwinti.library.api.service.LoanService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +30,10 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.net.URI;
+import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(SpringExtension.class)//JUnit 5! //Cria um mini context para executar os testes
@@ -44,6 +50,9 @@ public class BookControllerTest {
 
     @MockBean //mockBean é um mock especializado para criar uma instancia mock de um service para ser utilizado dentro do context do test e que pode ter o comportamento modificado de acordo com a necessida do test
     BookService bookService;
+
+    @MockBean
+    LoanService loanService;
 
     @Test
     @DisplayName("Deve criar um livro com sucesso.")
@@ -305,12 +314,58 @@ public class BookControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("totalElements").value(1));
     }
 
+    @Test
+    @DisplayName("**ROTA DE SUBRECURSO** Deve obter todos os emprestimos de um livro")
+    public void getLoansFromBook() throws Exception {
+        //scenario
+        Long id = createNewBook().getId();
+        Book existentBook = createNewBookManyLoans();
+        String queryString = String.format("?page=0&size=10");
+        String  rotaSubRecurso = URL_BOOK_API+"/"+id+"/loans"+queryString;
+        Page<Loan> pageLoan = new PageImpl<Loan>(existentBook.getLoans(), PageRequest.of(0, 10), 6);
+
+        //mock da ** camada service **
+        BDDMockito.given(bookService.getByid(id)).willReturn(Optional.of(existentBook));
+        BDDMockito.given(loanService.getLoansByBook(existentBook, pageLoan.getPageable())).willReturn(pageLoan);
+
+        //execution(wheb)
+        MockHttpServletRequestBuilder mockHttpServletRequestBuilder = MockMvcRequestBuilders.get(rotaSubRecurso)
+                                                                        .accept(MediaType.APPLICATION_JSON);
+
+        //verification
+        mockMvc.perform(mockHttpServletRequestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isOk());
+//                .andExpect(MockMvcResultMatchers.jsonPath("loanDTOs").exists())
+//                .andExpect(MockMvcResultMatchers.jsonPath("loanDTOs").isArray())
+//                .andExpect(MockMvcResultMatchers.jsonPath("loanDTOs[0]").exists())
+//                .andExpect(MockMvcResultMatchers.jsonPath("loanDTOs[1]").exists())
+//                .andExpect(MockMvcResultMatchers.jsonPath("loanDTOs[2]").exists())
+//                .andExpect(MockMvcResultMatchers.jsonPath("loanDTOs[3]").exists())
+//                .andExpect(MockMvcResultMatchers.jsonPath("loanDTOs[4]").exists())
+//                .andExpect(MockMvcResultMatchers.jsonPath("loanDTOs[5]").exists());
+    }
+
     private BookDTO createNewBookDTO() {
         return BookDTO.builder().author("Andres").isbn("123").title("A mudança").build();
     }
 
     private Book createNewBook() {
         return Book.builder().id(12l).author("Andres").isbn("123").title("A mudança").build();
+    }
+
+    private Book createNewBookManyLoans() {
+        Book book = Book.builder().id(12l).author("Andres").isbn("123").title("A mudança").build();
+        List<Loan> loans = Arrays.asList(
+                Loan.builder().id(1l).isbn(book.getIsbn()).book(book).loanDate(LocalDate.now()).customer("Cliente 1").build(),
+                Loan.builder().id(2l).isbn(book.getIsbn()).book(book).loanDate(LocalDate.now().plusDays(1l)).customer("Cliente 2").build(),
+                Loan.builder().id(3l).isbn(book.getIsbn()).book(book).loanDate(LocalDate.now().plusDays(2l)).customer("Cliente 3").build(),
+                Loan.builder().id(4l).isbn(book.getIsbn()).book(book).loanDate(LocalDate.now().plusDays(3l)).customer("Cliente 4").build(),
+                Loan.builder().id(5l).isbn(book.getIsbn()).book(book).loanDate(LocalDate.now().plusDays(4l)).customer("Cliente 5").build(),
+                Loan.builder().id(6l).isbn(book.getIsbn()).book(book).loanDate(LocalDate.now().plusDays(5l)).customer("Cliente 6").build()
+        );
+        book.setLoans(loans);
+
+        return book;
     }
 
 }

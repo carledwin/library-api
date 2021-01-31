@@ -1,6 +1,7 @@
 package com.carledwinti.library.api.service;
 
 import com.carledwinti.library.api.dto.LoanFilterDTO;
+import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.model.Loan;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,4 +13,5 @@ public interface LoanService {
     Optional<Loan> getById(Long id);
     Optional<Loan> update(Loan loan);
     Page<Loan> findByFilter(Loan loanFilter, Pageable pageable);
+    Page<Loan> getLoansByBook(Book book, Pageable pageable);
 }

@@ -3,6 +3,7 @@ package com.carledwinti.library.api.dto;
 import lombok.*;
 
 import javax.validation.constraints.NotEmpty;
+import java.util.List;
 
 /*@Getter
 @Setter*/
@@ -18,6 +19,5 @@ public class BookDTO {
     private String author;
     @NotEmpty
     private String isbn;
-
-
+    private List<LoanDTO> loanDTOs;
 }

@@ -1,11 +1,16 @@
 package com.carledwinti.library.api.resource;
 
 import com.carledwinti.library.api.dto.BookDTO;
+import com.carledwinti.library.api.dto.LoanDTO;
 import com.carledwinti.library.api.model.Book;
+import com.carledwinti.library.api.model.Loan;
 import com.carledwinti.library.api.service.BookService;
+import com.carledwinti.library.api.service.LoanService;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +22,15 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/books")
+@RequiredArgsConstructor //para inicializar(@Autowired) as propriedades da class sem precisar de um construtor
 public class BookController {
 
-    private BookService bookService;
+    private final BookService bookService;
+    private final ModelMapper modelMapper;
+    private final LoanService loanService;
+
+   /*
+   private BookService bookService;
     private ModelMapper modelMapper; //existe a necessida de adicioná-lo ao context declarando
     // um @Bean na class de inicialização **LibraryApiApplication para que ela possa ser injetada aqui via constructor
 
@@ -27,7 +38,7 @@ public class BookController {
     public BookController(BookService bookService, ModelMapper modelMapper){
         this.bookService = bookService;
         this.modelMapper = modelMapper;
-    }
+    }*/
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -110,6 +121,23 @@ public class BookController {
                                             .map(book -> modelMapper.map(book, BookDTO.class))
                                             .collect(Collectors.toList());
         return new PageImpl<BookDTO>(bookDTOList, pageRequest, pageBook.getTotalElements());
+    }
+
+    //MAPEAMENTO DE SUBRECURSO
+    @GetMapping("/{id}/loans")
+    @ResponseStatus(HttpStatus.OK)
+    public Page<LoanDTO> getAllLoanFromBook(@PathVariable Long id, Pageable pageable){
+        Book book = bookService.getByid(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Page<Loan> pageLoan = loanService.getLoansByBook(book, pageable);
+        List<LoanDTO> loanDTOS = pageLoan.getContent().stream()
+                .map(loan -> {
+                    Book loanBook = loan.getBook();
+                    BookDTO bookDTO = modelMapper.map(loanBook, BookDTO.class);
+                    LoanDTO loanDTO = modelMapper.map(loan, LoanDTO.class);
+                    loanDTO.setBookDTO(bookDTO);
+                    return loanDTO;
+                }).collect(Collectors.toList());
+        return new PageImpl<LoanDTO>(loanDTOS, pageable, pageLoan.getTotalElements());
     }
 
 }

@@ -3,6 +3,7 @@ package com.carledwinti.library.api.service.impl;
 import com.carledwinti.library.api.constants.ConstantsError;
 import com.carledwinti.library.api.dto.LoanFilterDTO;
 import com.carledwinti.library.api.exception.BusinessException;
+import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.model.Loan;
 import com.carledwinti.library.api.repository.LoanRepository;
 import com.carledwinti.library.api.service.LoanService;
@@ -49,6 +50,11 @@ public class LoanServiceImpl implements LoanService {
     @Override
     public Page<Loan> findByFilter(Loan loanFilter, Pageable pageable) {
         return loanRepository.findByBookIsbnOrCustomer(loanFilter.getIsbn(), loanFilter.getCustomer(), pageable);
+    }
+
+    @Override
+    public Page<Loan> getLoansByBook(Book book, Pageable pageable) {
+        return loanRepository.findByBook(book, pageable);
     }
 
 
