@@ -1,6 +1,7 @@
 package com.carledwinti.library.api.service;
 
 import com.carledwinti.library.api.constants.ConstantsError;
+import com.carledwinti.library.api.dto.LoanFilterDTO;
 import com.carledwinti.library.api.exception.BusinessException;
 import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.model.Loan;
@@ -11,12 +12,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Optional;
 
 @ExtendWith(SpringExtension.class)
@@ -101,6 +110,48 @@ public class LoanServiceTest {
         //precisamos garantir que o save nunca erá executado quando este erro for lançado
         Mockito.verify(loanRepository, Mockito.times(1)).existsByBookAndNotReturned(loan.getBook());
         Mockito.verify(loanRepository, Mockito.never()).save(loan);
+    }
+
+    @Test
+    @DisplayName("Deve obter as informações de loan pelo Id")
+    public void getLoanByid(){
+        //scenario
+        Long loanId = 1l;
+        Loan existentLoan = savedLoan();
+
+        //mock
+        Mockito.when(loanRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(existentLoan));
+
+        //execution
+        Optional<Loan> foundLoan = loanService.getById(loanId);
+
+        //verification
+        Assertions.assertThat(foundLoan.get()).isEqualTo(existentLoan);
+        Assertions.assertThat(foundLoan.isPresent()).isTrue();
+        Mockito.verify(loanRepository, Mockito.times(1)).findById(loanId);
+    }
+
+    @Test
+    @DisplayName("Deve atualizar um loan")
+    public void updateLoan(){
+        //scenario
+        Loan existentLoan = savedLoan();
+        Loan updatedLoan = savedLoan();
+        updatedLoan.setReturned(true);
+
+        //mock
+        Mockito.when(loanRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(existentLoan));
+        Mockito.when(loanRepository.save(existentLoan)).thenReturn(updatedLoan);
+
+        //execution
+        Optional<Loan> loan = loanService.update(existentLoan);
+
+        //verification
+        Assertions.assertThat(loan.isPresent()).isTrue();
+        Assertions.assertThat(loan.get()).isEqualTo(updatedLoan);
+        Assertions.assertThat(loan.get().getReturned()).isTrue();
+        Mockito.verify(loanRepository, Mockito.times(1)).findById(existentLoan.getId());
+        Mockito.verify(loanRepository, Mockito.times(1)).save(existentLoan);
     }
 
     private Loan savedLoan(){

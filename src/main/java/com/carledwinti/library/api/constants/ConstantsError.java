@@ -7,4 +7,5 @@ public class ConstantsError {
     public static final String MSG_ERROR_ID_CANT_BE_NULL = "Id can't be null.";
     public static final String MSG_ERROR_BOOK_NOT_FOUND_FOR_ISBN = "Book not fond for passed ISBN";
     public static final String MSG_ERROR_BOOK_ALREADY_LOANED = "Book already loaned.";
+    public static final String MSG_ERROR_RETURN_LOAN_ID_NOTFOUND = "Id not found to return loan";
 }

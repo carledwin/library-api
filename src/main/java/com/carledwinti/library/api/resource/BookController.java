@@ -104,11 +104,10 @@ public class BookController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public Page<BookDTO> getByFilter(BookDTO bookDTO, Pageable pageRequest){
-        Book bookfilter = modelMapper.map(bookDTO, Book.class);
-        Page<Book> pageBook = bookService.findByFilter(bookfilter, pageRequest);
-        List<BookDTO> bookDTOList =  pageBook.getContent()
-                                            .stream()
-                                            .map(entity -> modelMapper.map(entity, BookDTO.class))
+        Book bookFilter = modelMapper.map(bookDTO, Book.class);
+        Page<Book> pageBook = bookService.findByFilter(bookFilter, pageRequest);
+        List<BookDTO> bookDTOList =  pageBook.getContent().stream()
+                                            .map(book -> modelMapper.map(book, BookDTO.class))
                                             .collect(Collectors.toList());
         return new PageImpl<BookDTO>(bookDTOList, pageRequest, pageBook.getTotalElements());
     }
