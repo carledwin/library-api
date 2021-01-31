@@ -43,7 +43,7 @@ public class LoanServiceTest {
 
         //mock
         Mockito.when(loanRepository.save(loan)).thenReturn(savedLoanMock);
-        Mockito.when(loanRepository.existsByBookAndNotReturned(loan)).thenReturn(false);
+        Mockito.when(loanRepository.existsByBookAndNotReturned(loan.getBook())).thenReturn(false);
         //execution
         //caso este método não tenha sido implementado com a chamada para loanRepository.save(..) que foi mockado
         //será retornado o erro org.opentest4j.AssertionFailedError:
@@ -59,7 +59,7 @@ public class LoanServiceTest {
         Assertions.assertThat(savedLoan.get().getLoanDate()).isEqualTo(LocalDate.now());
 
         //precisamos garantir que o save nunca erá executado quando este erro for lançado
-        Mockito.verify(loanRepository, Mockito.times(1)).existsByBookAndNotReturned(loan);
+        Mockito.verify(loanRepository, Mockito.times(1)).existsByBookAndNotReturned(loan.getBook());
         Mockito.verify(loanRepository, Mockito.times(1)).save(loan);
     }
 
@@ -71,7 +71,7 @@ public class LoanServiceTest {
         loan.setId(null);
 
         //mock
-        Mockito.when(loanRepository.existsByBookAndNotReturned(loan)).thenReturn(true);
+        Mockito.when(loanRepository.existsByBookAndNotReturned(loan.getBook())).thenReturn(true);
 
         //execution
         //caso este método não tenha sido implementado com a chamada para loanRepository.save(..) que foi mockado
@@ -99,7 +99,7 @@ public class LoanServiceTest {
                 .hasMessage(ConstantsError.MSG_ERROR_BOOK_ALREADY_LOANED);
 
         //precisamos garantir que o save nunca erá executado quando este erro for lançado
-        Mockito.verify(loanRepository, Mockito.times(1)).existsByBookAndNotReturned(loan);
+        Mockito.verify(loanRepository, Mockito.times(1)).existsByBookAndNotReturned(loan.getBook());
         Mockito.verify(loanRepository, Mockito.never()).save(loan);
     }
 

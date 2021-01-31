@@ -20,7 +20,7 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public Optional<Loan> save(Loan loan) {
-        if(loanRepository.existsByBookAndNotReturned(loan)){
+        if(loanRepository.existsByBookAndNotReturned(loan.getBook())){
             throw new BusinessException(ConstantsError.MSG_ERROR_BOOK_ALREADY_LOANED);
         }
         return Optional.of(this.loanRepository.save(loan));

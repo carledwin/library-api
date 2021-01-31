@@ -2,6 +2,7 @@ package com.carledwinti.library.api.repository;
 
 import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.model.Loan;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,15 +29,19 @@ public class LoanRepositoryTest {
     @DisplayName("Deve verificar se existe emprestimo não devolvido para o livro")
     public void existsByBookAndNotReturned(){
 
-        Book book = Book.builder().author("Urntin").title("Sistema Solar").isbn("6678").build();
+        String isbn = "6678";
+        Book book = Book.builder().author("Urntin").title("Sistema Solar").isbn(isbn).build();
         Book savedBook = testEntityManager.persist(book);
 
-        Loan loan = Loan.builder().book(savedBook).returned(false).loanDate(LocalDate.now()).customer("Amaro").build();
+        //Loan loan = Loan.builder().book(savedBook).returned(true).loanDate(LocalDate.now()).isbn(isbn).customer("Amaro").build();
+        //returned true or false
+        Loan loan = Loan.builder().book(savedBook).returned(true).loanDate(LocalDate.now()).isbn(isbn).customer("Amaro").build();
+
         Loan savedLoan = testEntityManager.persist(loan);
 
-        Boolean loanedBook = loanRepository.existsByBookAndNotReturned(savedLoan);
+        Boolean loanedBook = loanRepository.existsByBookAndNotReturned(savedBook);
 
-        System.out.println(loanedBook);
+        Assertions.assertThat(loanedBook).isTrue();
 
     }
 }
