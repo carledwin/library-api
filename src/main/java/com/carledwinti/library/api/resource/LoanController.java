@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +47,7 @@ public class LoanController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public LoanDTO create(@RequestBody LoanDTO loanDTO){
+    public LoanDTO create(@Valid @RequestBody LoanDTO loanDTO){
         Book book = bookService.getBookByIsbn(loanDTO.getIsbn())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST
                         , ConstantsError.MSG_ERROR_BOOK_NOT_FOUND_FOR_ISBN));

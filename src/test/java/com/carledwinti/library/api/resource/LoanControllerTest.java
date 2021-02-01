@@ -234,7 +234,7 @@ public class LoanControllerTest {
     }
 
     private LoanDTO createNewLoanDTO(){
-        return LoanDTO.builder().isbn("123").customer("Lariano").build();
+        return LoanDTO.builder().isbn("123").customer("Lariano").customerEmail("lariano@email.com").build();
     }
 
     private Loan savedLoan(){
@@ -242,6 +242,7 @@ public class LoanControllerTest {
         return Loan.builder().id(1l)
                 .isbn("123")
                 .customer("Lariano")
+                .customerEmail("lariano@email.com")
                 .book(book)
                 .returned(false)
                 .loanDate(LocalDate.now())
