@@ -9,6 +9,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     @Query(value = "select " +
@@ -26,4 +30,8 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     Page<Loan> findByBookIsbnOrCustomer(@Param("isbn") String isbn, @Param("customer") String customer, Pageable pageable);
 
     Page<Loan> findByBook(Book book, Pageable pageable);
+
+    //erro caso não implemente a query --> No property lessThanThan found for type LocalDate! Traversed path: Loan.loanDate.
+    @Query(value = "select loan from Loan as loan where loan.loanDate <= :daysOverDue and (loan.returned is null or loan.returned is false)")
+    List<Optional<Loan>> findByLoanDateLessThanAndNotReturned(@Param("daysOverDue") LocalDate daysOverDue);
 }

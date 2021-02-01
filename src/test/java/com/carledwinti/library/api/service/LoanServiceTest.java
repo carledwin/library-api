@@ -1,8 +1,6 @@
 package com.carledwinti.library.api.service;
 
 import com.carledwinti.library.api.constants.ConstantsError;
-import com.carledwinti.library.api.dto.LoanDTO;
-import com.carledwinti.library.api.dto.LoanFilterDTO;
 import com.carledwinti.library.api.exception.BusinessException;
 import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.model.Loan;
@@ -13,14 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.*;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -188,6 +183,21 @@ public class LoanServiceTest {
                 .findByBookIsbnOrCustomer(loanFilter.getIsbn(), loanFilter.getCustomer(), pageRequest);
     }
 
+    @Test
+    @DisplayName("Deve buscar todos os emprestimos atrasados a mais de 3 dias e ainda não foram entregues")
+    public void loanOverdueForMoreThan3Days(){
+        //scenario
+        Integer daysOfOverdue = 4;
+
+        //mock
+        Mockito.when(loanRepository.findByLoanDateLessThanAndNotReturned(Mockito.any(LocalDate.class)))
+        .thenReturn(createExistentListOptionalLoanOverdue());
+        //execution
+        List<Optional<Loan>> foundOptionalLoanList = loanService.getAllOverdueLoans(daysOfOverdue);
+        Assertions.assertThat(foundOptionalLoanList.isEmpty()).isFalse();
+        Assertions.assertThat(foundOptionalLoanList.size()).isEqualTo(3);
+    }
+
     private Loan savedLoan(){
         Book book = existentBook();
         return Loan.builder().id(1l)
@@ -201,5 +211,34 @@ public class LoanServiceTest {
 
     private Book existentBook(){
         return Book.builder().id(5678l).title("Antenor Santanará").isbn("123").author("Milanes").build();
+    }
+
+    private List<Optional<Loan>> createExistentListOptionalLoanOverdue(){
+        Book book = existentBook();
+        Loan loan1 = Loan.builder().id(1l)
+                .isbn("123")
+                .customer("Lariano")
+                .book(book)
+                .returned(false)
+                .loanDate(LocalDate.now().minusDays(10))
+                .build();
+        Loan loan2 = Loan.builder().id(41l)
+                .isbn("123")
+                .customer("Chcagos")
+                .book(book)
+                .returned(false)
+                .loanDate(LocalDate.now().minusDays(8))
+                .build();
+
+        Book book2 = Book.builder().id(55l).title("Selva da Manada").isbn("12553").author("Antunbes").build();
+        Loan loan3 = Loan.builder().id(13l)
+                .isbn("12553")
+                .customer("Frendess")
+                .book(book2)
+                .returned(false)
+                .loanDate(LocalDate.now().minusDays(14))
+                .build();
+
+        return Arrays.asList(Optional.of(loan1), Optional.of(loan2), Optional.of(loan3));
     }
 }
