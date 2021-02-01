@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Entity
@@ -20,13 +22,17 @@ public class Loan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotEmpty
     private String isbn;
+    @NotEmpty
     private String customer;
     @Column(name="customer_email")
+    @NotEmpty
     private String customerEmail;
     @JoinColumn(name="id_book")
     @ManyToOne
     private Book book;
+    @NotNull
     private LocalDate loanDate;
     private Boolean returned;
 }

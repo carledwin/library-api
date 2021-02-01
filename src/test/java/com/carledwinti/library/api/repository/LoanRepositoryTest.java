@@ -65,7 +65,7 @@ public class LoanRepositoryTest {
 
         //Loan loan = Loan.builder().book(savedBook).returned(true).loanDate(LocalDate.now()).isbn(isbn).customer("Amaro").build();
         //returned true or false
-        Loan loan = Loan.builder().book(savedBook).returned(true).loanDate(LocalDate.now()).isbn(isbn).customer("Amaro").build();
+        Loan loan = Loan.builder().book(savedBook).returned(true).loanDate(LocalDate.now()).isbn(isbn).customer("Amaro").customerEmail("amaro@email.com").build();
 
         Loan savedLoan = testEntityManager.persist(loan);
         return savedLoan;
@@ -103,12 +103,14 @@ public class LoanRepositoryTest {
                 .customer("Lariano")
                 .book(book)
                 .returned(false)
+                .customerEmail("lariano@email.com")
                 .loanDate(LocalDate.now().minusDays(10))
                 .build();
         loan1 = loanRepository.save(loan1);
 
         Loan loan2 = Loan.builder().isbn("123")
-                .customer("Chcagos")
+                .customer("Chicagos")
+                .customerEmail("chicagos@email.com")
                 .book(book)
                 .returned(false)
                 .loanDate(LocalDate.now().minusDays(8))
@@ -121,6 +123,7 @@ public class LoanRepositoryTest {
 
         Loan loan3 = Loan.builder().isbn("12553")
                 .customer("Frendess")
+                .customerEmail("frendess@email.com")
                 .book(book2)
                 .returned(false)
                 .loanDate(LocalDate.now().minusDays(14))
@@ -129,6 +132,7 @@ public class LoanRepositoryTest {
 
         Loan loan4 = Loan.builder().isbn("12553")
                 .customer("kanus")
+                .customerEmail("kanus@email.com")
                 .book(book2)
                 .returned(false)
                 .loanDate(LocalDate.now())
@@ -137,6 +141,7 @@ public class LoanRepositoryTest {
 
         Loan loan5 = Loan.builder().isbn("12553")
                 .customer("Lima")
+                .customerEmail("lima@email.com")
                 .book(book2)
                 .returned(true)
                 .loanDate(LocalDate.now().minusDays(50))
