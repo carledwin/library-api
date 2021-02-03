@@ -6,6 +6,10 @@ import com.carledwinti.library.api.model.Book;
 import com.carledwinti.library.api.model.Loan;
 import com.carledwinti.library.api.service.BookService;
 import com.carledwinti.library.api.service.LoanService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -23,6 +27,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor //para inicializar(@Autowired) as propriedades da class sem precisar de um construtor
+@Api("Book API")
 public class BookController {
 
     private final BookService bookService;
@@ -42,6 +47,7 @@ public class BookController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @ApiOperation("Creates a book")
     public BookDTO create(@Valid @RequestBody BookDTO bookDTO){
 
     /*caso seja enviado um objeto com todas as propriedades vazias irá lançar
@@ -75,6 +81,7 @@ public class BookController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @ApiOperation("Obtains a book by id")
     public BookDTO getBook(@PathVariable Long id){
         //caso não retorne nada e não tenha tratamento irá retornar a exception --> Caused by: java.util.NoSuchElementException:
         // No value present
@@ -89,6 +96,8 @@ public class BookController {
 
     @DeleteMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ApiOperation("Deletes a book by id")
+    @ApiResponses({@ApiResponse(code=204, message = "Book successfully deleted")})
     public void deleteBook(@PathVariable Long id){
         //ele tenta obter um book com um .get() implicito
         // e caso não encontre retornamos uma exception com resonseStatus NOT_FOUND no orElseThrow
@@ -98,6 +107,7 @@ public class BookController {
 
     @PutMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
+    @ApiOperation("Updates a book by id")
     public BookDTO updateBook(@PathVariable Long id, @RequestBody BookDTO bookDTO){
         return bookService.getByid(id).map(existentBook -> {
             //set
@@ -114,6 +124,7 @@ public class BookController {
     // via queryParam e também as propriedades page e size ele vai tentar encaicar no objeto pageRequest(Pageable)
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
+    @ApiOperation("Obtains many Books by filters")
     public Page<BookDTO> getByFilter(BookDTO bookDTO, Pageable pageRequest){
         Book bookFilter = modelMapper.map(bookDTO, Book.class);
         Page<Book> pageBook = bookService.findByFilter(bookFilter, pageRequest);
@@ -126,6 +137,7 @@ public class BookController {
     //MAPEAMENTO DE SUBRECURSO
     @GetMapping("/{id}/loans")
     @ResponseStatus(HttpStatus.OK)
+    @ApiOperation("Obtains all Loans from Book by id book")
     public Page<LoanDTO> getAllLoanFromBook(@PathVariable Long id, Pageable pageable){
         Book book = bookService.getByid(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         Page<Loan> pageLoan = loanService.getLoansByBook(book, pageable);
