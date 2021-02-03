@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/books")
 @RequiredArgsConstructor //para inicializar(@Autowired) as propriedades da class sem precisar de um construtor
 @Api("Book API")
+@Slf4j
 public class BookController {
 
     private final BookService bookService;
@@ -49,7 +51,7 @@ public class BookController {
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation("Creates a book")
     public BookDTO create(@Valid @RequestBody BookDTO bookDTO){
-
+    log.info("creating a book for isbn: {}", bookDTO.getIsbn());
     /*caso seja enviado um objeto com todas as propriedades vazias irá lançar
     org.springframework.web.util.NestedServletException: Request processing failed;
      nested exception is java.lang.IllegalArgumentException: source cannot be null, isso porque o
@@ -83,6 +85,7 @@ public class BookController {
     @ResponseStatus(HttpStatus.OK)
     @ApiOperation("Obtains a book by id")
     public BookDTO getBook(@PathVariable Long id){
+        log.info("Obtaining details for book id: {}", id);
         //caso não retorne nada e não tenha tratamento irá retornar a exception --> Caused by: java.util.NoSuchElementException:
         // No value present
         //Optional<Book> bookOptional = bookService.getByid(id);
@@ -99,6 +102,7 @@ public class BookController {
     @ApiOperation("Deletes a book by id")
     @ApiResponses({@ApiResponse(code=204, message = "Book successfully deleted")})
     public void deleteBook(@PathVariable Long id){
+        log.info("Deleting a book by id: {}", id);
         //ele tenta obter um book com um .get() implicito
         // e caso não encontre retornamos uma exception com resonseStatus NOT_FOUND no orElseThrow
         Book book = bookService.getByid(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -109,6 +113,7 @@ public class BookController {
     @ResponseStatus(HttpStatus.OK)
     @ApiOperation("Updates a book by id")
     public BookDTO updateBook(@PathVariable Long id, @RequestBody BookDTO bookDTO){
+        log.info("Updating a book by id: {}", id);
         return bookService.getByid(id).map(existentBook -> {
             //set
             existentBook.setAuthor(bookDTO.getAuthor());
@@ -126,6 +131,7 @@ public class BookController {
     @ResponseStatus(HttpStatus.OK)
     @ApiOperation("Obtains many Books by filters")
     public Page<BookDTO> getByFilter(BookDTO bookDTO, Pageable pageRequest){
+        log.info("Obtaining a book by filter: {}", bookDTO.toString());
         Book bookFilter = modelMapper.map(bookDTO, Book.class);
         Page<Book> pageBook = bookService.findByFilter(bookFilter, pageRequest);
         List<BookDTO> bookDTOList =  pageBook.getContent().stream()
@@ -139,6 +145,7 @@ public class BookController {
     @ResponseStatus(HttpStatus.OK)
     @ApiOperation("Obtains all Loans from Book by id book")
     public Page<LoanDTO> getAllLoanFromBook(@PathVariable Long id, Pageable pageable){
+        log.info("Obtaining loans to book by id: {}", id);
         Book book = bookService.getByid(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         Page<Loan> pageLoan = loanService.getLoansByBook(book, pageable);
         List<LoanDTO> loanDTOS = pageLoan.getContent().stream()
@@ -150,6 +157,14 @@ public class BookController {
                     return loanDTO;
                 }).collect(Collectors.toList());
         return new PageImpl<LoanDTO>(loanDTOS, pageable, pageLoan.getTotalElements());
+    }
+
+    @GetMapping("/teste-log")
+    public String testeLog(){
+        log.info("teste de log********************SUCCESS");
+        log.warn("teste de log********************WARNING");
+        log.error("teste de log********************ERROR");
+        return "Teste de log....";
     }
 
 }
