@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+##em produção ignorar o commit de appfile.log
+#appfile.log
+
 ### STS ###
 .apt_generated
 .classpath

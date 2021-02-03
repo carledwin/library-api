@@ -1,0 +1,5 @@
+language: java
+jdk:
+  - oraclejdk8
+dist: trusty
+#trusty-deconfiança somente para dizer ao travis que a versão do java informada é confiável
