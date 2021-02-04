@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,7 +18,8 @@ import java.util.List;
 
 @SpringBootApplication
 @EnableScheduling //para habilitar o agendamento de tarefas no Spring
-public class LibraryApiApplication {
+//public class LibraryApiApplication extends SpringBootServletInitializer { /*sem tomcat, vai inicializar a aplicação a partir de um servlet*/
+public class LibraryApiApplication { /*com tomcat tomcat embedded, vai inicializar a aplicação a partir do tomcat embarcado*/
 
 	@Bean //criando uma instancia Singleton para disponibilizar no context para outras classes via Injection
 	public ModelMapper modelMapper(){

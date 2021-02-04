@@ -1,0 +1,50 @@
+BUILD MANUAL NO HEROKU
+
+Instalar o Heroku CLI - https://devcenter.heroku.com/articles/heroku-cli
+
+Inicializar o heroku via cmd
+$ cd C:\Users\carli\git-intelliJ\library-api
+$ heroku login
+Ele vai redirecionar para o browser, basta logar e voltar para o terminal
+
+Criar uma app no heroku
+$ heroku create library-api-app                                                                                                                                          Creating ⬢ library-api-app... done
+result:
+URL da app: https://library-api-app.herokuapp.com/
+Repo git: https://git.heroku.com/library-api-app.git
+
+Fazendo um push para o repo do git NO HEROKU
+$ git push heroku master
+result: será feito um push para o repo do HEROKU
+remote:        [INFO] ------------------------------------------------------------------------
+remote:        [INFO] BUILD SUCCESS
+remote:        [INFO] ------------------------------------------------------------------------
+remote:        [INFO] Total time:  24.436 s
+remote:        [INFO] Finished at: 2021-02-04T01:26:43Z
+remote:        [INFO] ------------------------------------------------------------------------
+remote: -----> Discovering process types
+remote:        Procfile declares types     -> (none)
+remote:        Default types for buildpack -> web
+remote:
+remote: -----> Compressing...
+remote:        Done: 95.2M
+remote: -----> Launching...
+remote:        Released v3
+remote:        https://library-api-app.herokuapp.com/ deployed to Heroku
+remote:
+remote: Verifying deploy... done.
+To https://git.heroku.com/library-api-app.git
+ * [new branch]      master -> master
+
+
+ CONFIGURAÇÃO PARA ESTEIRA CONTINUA NO HEROKU
+ associar o repo do git a app no HEROKU
+ git: https://github.com/carledwin/library-api
+ heroku: https://dashboard.heroku.com/apps/library-api-app/deploy/github
+ Marque a opção 'Wait for CI to pass before deploy' para executar o deploy
+ automaticamente 'somente' após o 'pass' da ferramenta de CI(Continuous Integration).
+ Caso dê erro ele não faz o deploy no Heroku
+ E selecionar a opção Enable Automatic Deploys para a master
+
+
+

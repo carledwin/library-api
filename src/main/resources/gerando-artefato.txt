@@ -1,0 +1,65 @@
+Gerar o artefato(.jar/.war) para fazer o deploy manual
+
+No caso o Spring Boot é uma aplicação Standalone, gera o artefato e também inicializa caso queira.
+por default já gera .jar na configuração implicita do .pom <packaging>jar</packaging>
+cmd(no terminal do INTELLIJ):
+$ mvnw clean package (deleta a pasta target(clean) executa os testes e passando em todos empacota gerando um artefato/.jar(package))
+C:\Users\carli\git-intelliJ\library-api> mvnw clean package
+result:
+ --- maven-jar-plugin:3.1.2:jar (default-jar) @ library-api ---
+[INFO] Building jar: C:\Users\carli\git-intelliJ\library-api\target\library-api-0.0.1-SNAPSHOT.jar
+[INFO]
+[INFO] --- spring-boot-maven-plugin:2.2.1.RELEASE:repackage (repackage) @ library-api ---
+[INFO] Replacing main artifact with repackaged archive
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  34.850 s
+[INFO] Finished at: 2021-02-03T22:47:02-03:00
+[INFO] ------------------------------------------------------------------------
+
+
+Start da aplication local
+Executando o build manual via pasta /target para subir manualmente a aplicação a partir
+do artefato/.jar gerado
+C:\Users\carli\git-intelliJ\library-api>cd target
+C:\Users\carli\git-intelliJ\library-api\target>java -jar library-api-0.0.1-SNAPSHOT.jar
+
+Testando: http://localhost:8080/api/books/teste-log
+Para parar a app local Ctrl + C
+
+
+
+Executando no Tomcat
+
+Precisaremos criar um .war e desabilitar o Tomcat embedded da aplicação Spring Boot
+adicionando a configuração no .pom
+<packaging>war</packaging>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-tomcat</artifactId>
+    <scope>provided</scope>
+</dependency>
+E também alterar a classe de inicialização
+public class LibraryApiApplication { /*com tomcat tomcat embedded, vai inicializar a aplicação a partir do tomcat embarcado*/
+public class LibraryApiApplication extends SpringBootServletInitializer { /*sem tomcat, vai inicializar a aplicação a partir de um servlet*/
+
+cmd:
+C:\Users\carli\git-intelliJ\library-api\target>cd ..
+C:\Users\carli\git-intelliJ\library-api>mvnw clean package
+
+result:
+[INFO] Packaging webapp
+[INFO] Assembling webapp [library-api] in [C:\Users\carli\git-intelliJ\library-api\target\library-api-0.0.1-SNAPSHOT]
+[INFO] Processing war project
+[INFO] Webapp assembled in [446 msecs]
+[INFO] Building war: C:\Users\carli\git-intelliJ\library-api\target\library-api-0.0.1-SNAPSHOT.war
+[INFO]
+[INFO] --- spring-boot-maven-plugin:2.2.1.RELEASE:repackage (repackage) @ library-api ---
+[INFO] Replacing main artifact with repackaged archive
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  27.857 s
+[INFO] Finished at: 2021-02-04T00:46:47-03:00
+[INFO] ------------------------------------------------------------------------
