@@ -1,5 +1,9 @@
 language: java
 jdk:
   - oraclejdk8
-dist: trusty
 #trusty-deconfiança somente para dizer ao travis que a versão do java informada é confiável
+dist: trusty
+#pode ocorrer de dar falha ao tentar executar o mvnw, para isso vamos acrescentar o comando abaixo
+#dando permissão de execução
+before_install:
+  - chmod +x mvnw

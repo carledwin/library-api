@@ -17,6 +17,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -38,6 +39,7 @@ import java.util.Optional;
 
 @ExtendWith(SpringExtension.class)//JUnit 5! //Cria um mini context para executar os testes
 @ActiveProfiles("test")//Define o ambiente/profile/perfil de 'test' para a execução destes testes
+//@SpringBootTest//caso queiramos subir todo o contexo e não somente o contexto de um controller específico
 //@WebMvcTest//Para criar context Rest e testar os métodos da api
 @WebMvcTest(controllers = {BookController.class})//Podemos configurar para subir somente controllers específicos no context
 @AutoConfigureMockMvc //configura um objeto para podermos realizar as requisições e permitirá a utilização do @Autowired
