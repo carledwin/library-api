@@ -7,3 +7,7 @@ dist: trusty
 #dando permissão de execução
 before_install:
   - chmod +x mvnw
+#configurações para o CodeCov **** É obrigatório que o plugin do jacoco esteja configurado no .pom
+#language: java
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

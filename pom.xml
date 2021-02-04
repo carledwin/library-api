@@ -86,6 +86,41 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>2.2.1.RELEASE</version>
+			</plugin>
+			<!--executa os testes e gera o relatório
+			cmd: C:\Users\carli\git-intelliJ\library-api>mvnw test
+			Após o terminio e a geração do relatório poderemos acessar os relatórios
+			em: C:\Users\carli\git-intelliJ\library-api\target\surefire-reports
+			 Foi criada também uma pasta 'site' onde poderemos acessar os relatórios
+			 via web(local). file:///C:/Users/carli/git-intelliJ/library-api/target/site/jacoco/index.html
+			 C:\Users\carli\git-intelliJ\library-api\target\site\jacoco
+			 *******
+			 NÃO ESCREVEMOS CÓDIGOS PARA TUDO, SOMENTE PARA O QUE TEM ALGORITMO.
+			 Ex.: model, entity, dto podem ser excluidos da análise de coverage
+
+			 Configuração do CodCov será necessário ir no TRAVIS CI e adicionar a Environment Variable
+			 CODECOV_TOKEN com o valor XXX-xxxx-xxxxx-xxxxxxxx
+			 *********
+			 -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
